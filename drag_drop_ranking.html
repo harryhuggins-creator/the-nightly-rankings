@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pillow Talk Co-Host Pairing Rankings</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .instructions {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+        
+        .rankings-container {
+            background: #fafbfc;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .pairing-item {
+            background: white;
+            border: 2px solid #e1e4e8;
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            cursor: move;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .pairing-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateX(5px);
+        }
+        
+        .pairing-item.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .pairing-item.drag-over {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+        
+        .rank-number {
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .pairing-names {
+            flex: 1;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .drag-handle {
+            color: #999;
+            margin-left: 10px;
+            font-size: 20px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e1e4e8;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.3s;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .success-message {
+            display: none;
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .pairing-item {
+                padding: 12px 15px;
+            }
+            
+            .rank-number {
+                width: 25px;
+                height: 25px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ Pillow Talk Co-Host Pairing Rankings</h1>
+        <p class="subtitle">Rank all 15 co-host pairings from best to worst</p>
+        
+        <div class="instructions">
+            <strong>📝 Instructions:</strong> Drag and drop the pairings to rank them from 1 (best) to 15 (least preferred) based on <strong>which pairing would make you keep coming back for more</strong>. 
+            The pairing at the top will be ranked #1, and the bottom will be #15.
+        </div>
+        
+        <div class="form-section">
+            <div class="form-group">
+                <label for="name">Your Name (Optional)</label>
+                <input type="text" id="name" placeholder="Enter your name">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Your Email</label>
+                <input type="email" id="email" placeholder="your.email@hatch.co" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="role">Your Role</label>
+                <select id="role" required>
+                    <option value="">Select your role</option>
+                    <option value="Content Team">Content Team</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Product">Product</option>
+                    <option value="Leadership">Leadership</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="rankings-container" id="rankingsContainer">
+            <!-- Pairings will be inserted here -->
+        </div>
+        
+        <div class="form-section">
+            <div class="form-group">
+                <label for="favoriteHost">Who is your personal favorite host (regardless of pairing)?</label>
+                <select id="favoriteHost">
+                    <option value="">Select a host</option>
+                    <option value="Kristen">Kristen</option>
+                    <option value="Sophia">Sophia</option>
+                    <option value="Josh">Josh</option>
+                    <option value="Jacquis">Jacquis</option>
+                    <option value="KP">KP</option>
+                    <option value="Matt">Matt</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="comments">Additional Comments (Optional)</label>
+                <textarea id="comments" rows="4" placeholder="Any thoughts on specific pairings?"></textarea>
+            </div>
+        </div>
+        
+        <button class="submit-btn" id="submitBtn" onclick="submitForm()">Submit Rankings</button>
+        
+        <div class="success-message" id="successMessage">
+            ✅ Thank you! Your rankings have been submitted successfully.
+        </div>
+    </div>
+
+    <script>
+        // All 15 pairings
+        const pairings = [
+            "Kristen + Sophia",
+            "Kristen + Josh",
+            "Kristen + Jacquis",
+            "Kristen + KP",
+            "Kristen + Matt",
+            "Sophia + Josh",
+            "Sophia + Jacquis",
+            "Sophia + KP",
+            "Sophia + Matt",
+            "Josh + Jacquis",
+            "Josh + KP",
+            "Josh + Matt",
+            "Jacquis + KP",
+            "Jacquis + Matt",
+            "KP + Matt"
+        ];
+        
+        // Shuffle array for initial random order
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+        
+        // Initialize the rankings
+        function initializeRankings() {
+            const container = document.getElementById('rankingsContainer');
+            const shuffled = shuffle(pairings);
+            
+            shuffled.forEach((pairing, index) => {
+                const item = document.createElement('div');
+                item.className = 'pairing-item';
+                item.draggable = true;
+                item.dataset.pairing = pairing;
+                item.innerHTML = `
+                    <div class="rank-number">${index + 1}</div>
+                    <div class="pairing-names">${pairing}</div>
+                    <div class="drag-handle">☰</div>
+                `;
+                container.appendChild(item);
+                
+                // Add drag event listeners
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('dragover', handleDragOver);
+                item.addEventListener('drop', handleDrop);
+                item.addEventListener('dragenter', handleDragEnter);
+                item.addEventListener('dragleave', handleDragLeave);
+            });
+        }
+        
+        let draggedElement = null;
+        
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+        
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            updateRankNumbers();
+        }
+        
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+        
+        function handleDragEnter(e) {
+            this.classList.add('drag-over');
+        }
+        
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+        
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            
+            this.classList.remove('drag-over');
+            
+            if (draggedElement !== this) {
+                const container = document.getElementById('rankingsContainer');
+                const allItems = [...container.querySelectorAll('.pairing-item')];
+                const draggedIndex = allItems.indexOf(draggedElement);
+                const targetIndex = allItems.indexOf(this);
+                
+                if (draggedIndex < targetIndex) {
+                    this.parentNode.insertBefore(draggedElement, this.nextSibling);
+                } else {
+                    this.parentNode.insertBefore(draggedElement, this);
+                }
+            }
+            
+            return false;
+        }
+        
+        function updateRankNumbers() {
+            const items = document.querySelectorAll('.pairing-item');
+            items.forEach((item, index) => {
+                item.querySelector('.rank-number').textContent = index + 1;
+            });
+        }
+        
+        function submitForm() {
+            const email = document.getElementById('email').value;
+            const role = document.getElementById('role').value;
+            
+            if (!email || !role) {
+                alert('Please fill in your email and role');
+                return;
+            }
+            
+            // Get rankings
+            const rankings = {};
+            const items = document.querySelectorAll('.pairing-item');
+            items.forEach((item, index) => {
+                rankings[item.dataset.pairing] = index + 1;
+            });
+            
+            // Get other form data
+            const formData = {
+                timestamp: new Date().toISOString(),
+                name: document.getElementById('name').value,
+                email: email,
+                role: role,
+                rankings: rankings,
+                favoriteHost: document.getElementById('favoriteHost').value,
+                comments: document.getElementById('comments').value
+            };
+            
+            // Here you would submit to Google Sheets via Google Apps Script Web App
+            // For now, we'll just show the data
+            console.log('Form Data:', formData);
+            
+            // Show success message
+            document.getElementById('successMessage').style.display = 'block';
+            document.getElementById('submitBtn').disabled = true;
+            
+            // You can copy this data structure to implement the Google Sheets submission
+            alert('Rankings saved! (In production, this would submit to Google Sheets)\n\n' + 
+                  'To implement Google Sheets submission:\n' +
+                  '1. Create a Google Apps Script Web App\n' +
+                  '2. Update the submitForm function to POST to your Web App URL\n' +
+                  '3. The Web App will write the data to your Google Sheet');
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializeRankings);
+    </script>
+</body>
+</html>
