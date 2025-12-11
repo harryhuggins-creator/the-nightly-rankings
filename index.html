@@ -373,7 +373,7 @@
             });
         }
         
-        function submitForm() {
+        async function submitForm() {
             const email = document.getElementById('email').value;
             const role = document.getElementById('role').value;
             
@@ -381,6 +381,10 @@
                 alert('Please fill in your email and role');
                 return;
             }
+            
+            // Disable button to prevent double submission
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = 'Submitting...';
             
             // Get rankings
             const rankings = {};
@@ -400,20 +404,46 @@
                 comments: document.getElementById('comments').value
             };
             
-            // Here you would submit to Google Sheets via Google Apps Script Web App
-            // For now, we'll just show the data
-            console.log('Form Data:', formData);
-            
-            // Show success message
-            document.getElementById('successMessage').style.display = 'block';
-            document.getElementById('submitBtn').disabled = true;
-            
-            // You can copy this data structure to implement the Google Sheets submission
-            alert('Rankings saved! (In production, this would submit to Google Sheets)\n\n' + 
-                  'To implement Google Sheets submission:\n' +
-                  '1. Create a Google Apps Script Web App\n' +
-                  '2. Update the submitForm function to POST to your Web App URL\n' +
-                  '3. The Web App will write the data to your Google Sheet');
+            try {
+                // REPLACE THE URL BELOW WITH YOUR GOOGLE APPS SCRIPT WEB APP URL
+                const WEB_APP_URL = 'https://script.google.com/a/macros/hatch.co/s/AKfycbwdNL9SljXAUyU5zpJvT2MqhJ96Ej5NaxH4K_y7kfdHvPbj68WprE4iHObmQahY6eH3ww/exec';
+                
+                if (WEB_APP_URL === 'YOUR_WEB_APP_URL_HERE') {
+                    alert('Please update the WEB_APP_URL in the code with your Google Apps Script Web App URL');
+                    document.getElementById('submitBtn').disabled = false;
+                    document.getElementById('submitBtn').textContent = 'Submit Rankings';
+                    return;
+                }
+                
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                // Since we're using no-cors mode, we won't get a readable response
+                // but the data will still be sent to Google Sheets
+                
+                // Show success message
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('submitBtn').textContent = 'Submitted!';
+                
+                // Optional: Reset form after a delay
+                setTimeout(() => {
+                    if (confirm('Rankings submitted successfully! Would you like to submit another response?')) {
+                        location.reload();
+                    }
+                }, 2000);
+                
+            } catch (error) {
+                alert('Error submitting form. Please try again.');
+                console.error('Submission error:', error);
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('submitBtn').textContent = 'Submit Rankings';
+            }
         }
         
         // Initialize on page load
